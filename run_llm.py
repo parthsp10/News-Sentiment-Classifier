@@ -2,14 +2,12 @@
 import ollama
 
 # Function to generate responses using Ollama
-def generate_response(model, prompt):
-    print(f"Generating response for model: {model}") 
+def generate_response(model, prompt): 
     response = ollama.generate(model=model, prompt=prompt)  # To generate response
     # Limit the response to 100 words
     words = response['response'].split()  # Split the response into words
     if len(words) > 100:
-        truncated_response = " ".join(words[:100])  # Join the first 100 words
-        print("Response truncated to 100 words.") 
+        truncated_response = " ".join(words[:100])  # Join the first 100 words 
     else:
         truncated_response = response['response']  # Use the full response if it's <= 100 words
     
