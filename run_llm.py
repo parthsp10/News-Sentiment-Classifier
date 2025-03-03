@@ -36,14 +36,19 @@ def main():
     # Read prompts from the prompts.txt
     prompts = read_prompts("prompts.txt")
 
-    for model_name, model_id in models.items():
-        print(f"\nGenerating responses using {model_name}...")  # To print model name
-        for prompt in prompts:
-            print(f"\nPrompt: {prompt}")  # To print the prompt which are in prompts.txt
-            response = generate_response(model_id, prompt)  # To generate response
-            print(f"Response: {response}")  # To print response
+    # Open a file to save the responses
+    with open("responses.txt", "w") as response_file:
+        for model_name, model_id in models.items():
+            response_file.write(f"\nGenerating responses using {model_name}...\n")  # Write model name to file
+            print(f"\nGenerating responses using {model_name}...")  # To print model name
+            for prompt in prompts:
+                response_file.write(f"\nPrompt: {prompt}\n")  # Write the prompt to file
+                print(f"\nPrompt: {prompt}")  # To print the prompt which are in prompts.txt
+                response = generate_response(model_id, prompt)  # To generate response
+                response_file.write(f"Response: {response}\n")  # Write the response to file
+                print(f"Response: {response}")  # To print response
 
-    print("\nAll responses generated and displayed successfully!")  # To say everything is completed
+    print("\nAll responses generated and saved to responses.txt successfully!")  # To say everything is completed
 
 if __name__ == "__main__":
     main()  # Call the main function
