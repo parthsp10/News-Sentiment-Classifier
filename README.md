@@ -36,9 +36,9 @@ A robust web scraping solution that extracts business news headlines from multip
    Create environment from YAML file:
    conda env create -f requirements.yml
 
-   Activate the environment
+   Activate the environment:
    conda activate webscraping  
 
-   Run the python script
+   Run the python script:
    python scraper.py
    
