@@ -30,3 +30,15 @@ A robust web scraping solution that extracts business news headlines from multip
    ```bash
    git clone https://github.com/yourusername/business-news-scraper.git
    cd business-news-scraper
+
+2. **Set up the Conda environment**:
+
+   Create environment from YAML file:
+   conda env create -f requirements.yml
+
+   Activate the environment
+   conda activate webscraping  
+
+   Run the python script
+   python scraper.py
+   
