@@ -89,14 +89,3 @@ Trader Joe is downsizing its business --> negative
 - **Requests** + **BeautifulSoup** (for fast static scraping)
 - **Object-Oriented Programming** (Classes, Inheritance)
 
-
-## Notes
-
-- If scraping fails with `requests`, the program automatically falls back to using `selenium`.
-- Only **5 headlines** are fetched per website to ensure speed and reduce server load.
-- Sentiment is classified into one of **three categories**: `positive`, `negative`, or `neutral`.
-- Ollama must have the model (`llama3.2`) already pulled. Use:
-
-bash
-ollama pull llama3.2
-
