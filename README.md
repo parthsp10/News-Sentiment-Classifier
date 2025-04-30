@@ -37,7 +37,7 @@ conda activate project3_env
 conda activa
 pip install requests beautifulsoup4 selenium webdriver-manager ollama
 
-### 3. (Optional) Create environment.yml for reproducibility
+### 3. Create environment.yml for reproducibility
 
 conda env export > environment.yml
 
