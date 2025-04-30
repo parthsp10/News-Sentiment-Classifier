@@ -34,7 +34,7 @@ conda activate project3_env
 
 
 ### 2. Install Python Dependencies
-
+conda activa
 pip install requests beautifulsoup4 selenium webdriver-manager ollama
 
 ### 3. (Optional) Create environment.yml for reproducibility
@@ -64,7 +64,7 @@ Make sure the Ollama service is running in the background!
 
 Then, execute:
 
-python project3_sentiment_classifier.py
+python project3.py
 
 ### 3. Output Files
 
