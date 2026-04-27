@@ -10,13 +10,13 @@ It combines **Web Scraping**, **Local Language Models (LLMs)**, and **Object-Ori
 - **Headless Scraping**: Uses both `requests` and `selenium` with random User-Agents to mimic real users.
 - **Headline Limiting**: Fetches a maximum of 5 headlines from each website.
 - **Local Sentiment Analysis**: Analyzes the sentiment of each headline using an LLM (`llama3.2`) through Ollama.
+- **Parallel Processing**: Uses `ThreadPoolExecutor` for concurrent sentiment analysis.
 - **Modular OOP Design**:
   - Base classes (`BaseScraper`, `BaseLLM`)
   - Child classes (`HeadlineScraper`, `SentimentAnalyzer`)
 - **Clean Input/Output**:
   - `urls.txt` for input URLs
-  - `prompts.txt` for scraped headlines
-  - `sentiments.txt` for the model's sentiment predictions.
+  - `results.csv` for paired headlines, sentiments, source URLs, and timestamps.
 
 ## Prerequisites
 
@@ -27,19 +27,12 @@ It combines **Web Scraping**, **Local Language Models (LLMs)**, and **Object-Ori
 
 ## Setting Up the Environment
 
-### 1. Create and Activate Conda Environment
+### 1. Create and Activate Conda Environment from environment.yaml
 
-conda create -n project3_env python=3.9 -y
+```
+conda env create -f environment.yaml
 conda activate project3_env
-
-
-### 2. Install Python Dependencies
-conda activa
-pip install requests beautifulsoup4 selenium webdriver-manager ollama
-
-### 3. Create environment.yml for reproducibility
-
-conda env export > environment.yml
+```
 
 ## How to Use
 
@@ -70,14 +63,15 @@ python project3.py
 
 After successful execution:
 
-- **`prompts.txt`** — Contains all the scraped financial headlines.
-- **`sentiments.txt`** — Contains the predicted sentiments for each headline.
+- **`results.csv`** — Contains all scraped headlines paired with their predicted sentiments, source URLs, and timestamps.
 
 Example:
 
-Today the market jumped 2000 points --> positive
-Nvidia stocks are having a bullish run --> positive
-Trader Joe is downsizing its business --> negative
+| headline | sentiment | source_url | timestamp |
+|---|---|---|---|
+| Today the market jumped 2000 points | positive | https://www.marketwatch.com/ | 2026-04-27T... |
+| Nvidia stocks are having a bullish run | positive | https://finance.yahoo.com/ | 2026-04-27T... |
+| Trader Joe is downsizing its business | negative | https://www.cnbc.com/business/ | 2026-04-27T... |
 
 
 
@@ -88,4 +82,3 @@ Trader Joe is downsizing its business --> negative
 - **Selenium** + **Webdriver-Manager** (for dynamic web pages)
 - **Requests** + **BeautifulSoup** (for fast static scraping)
 - **Object-Oriented Programming** (Classes, Inheritance)
-

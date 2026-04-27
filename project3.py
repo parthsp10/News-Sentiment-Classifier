@@ -1,6 +1,9 @@
 # Import Required Libraries
 import random
 import time
+import csv
+import concurrent.futures
+from datetime import datetime
 from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
@@ -32,7 +35,22 @@ class BaseScraper:
 
 # Headline Scraper Class
 class HeadlineScraper(BaseScraper):
-    
+
+    def __init__(self):
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        options.add_argument(f'user-agent={random.choice(self.USER_AGENTS)}')
+        self.driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()), options=options
+        )
+
+    def close(self):
+        if hasattr(self, 'driver') and self.driver:
+            self.driver.quit()
+            self.driver = None
+
+    def __del__(self):
+        self.close()
 
     def scrape_with_requests(self, url):
         
@@ -41,22 +59,17 @@ class HeadlineScraper(BaseScraper):
             response = requests.get(url, headers=self.get_random_headers(), timeout=10)
             response.raise_for_status()
             return BeautifulSoup(response.text, 'html.parser')
-        except:
+        except Exception as e:
             return None  # If scraping fails, return None
 
     def scrape_with_selenium(self, url):
         
         try:
-            options = webdriver.ChromeOptions()
-            options.add_argument('--headless')  # Run Chrome in headless mode (no GUI)
-            options.add_argument(f'user-agent={random.choice(self.USER_AGENTS)}')  # Random user agent
-            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-            driver.get(url)
+            self.driver.get(url)
             time.sleep(random.uniform(2, 4))  # Wait for JavaScript to load
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
-            driver.quit()
+            soup = BeautifulSoup(self.driver.page_source, 'html.parser')
             return soup
-        except:
+        except Exception as e:
             return None
 
     def extract_headlines(self, soup, domain):
@@ -108,50 +121,56 @@ class SentimentAnalyzer(BaseLLM):
 
 # Helper Functions
 def read_urls(path):
-    
-    with open(path, 'r') as f:
-        return [line.strip() for line in f if line.strip()]
-
-def write_lines(path, lines):
-    
-    with open(path, 'w', encoding='utf-8') as f:
-        for line in lines:
-            f.write(line + '\n')
+    try:
+        with open(path, 'r') as f:
+            urls = [line.strip() for line in f if line.strip()]
+        print(f"Read {len(urls)} URLs from {path}")
+        return urls
+    except FileNotFoundError:
+        print(f"Error: The file '{path}' was not found.")
+        return []
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
 
 # Main Program
 def main():
     
-    url_file = "urls.txt"         # Input: List of financial news websites
-    prompt_file = "prompts.txt"   # Output: Scraped headlines
-    output_file = "sentiments.txt"  # Output: Sentiment results
+    url_file = "urls.txt"           # Input: List of financial news websites
+    output_file = "results.csv"     # Output: Paired headlines and sentiments
 
     urls = read_urls(url_file)
     scraper = HeadlineScraper()
     llm = SentimentAnalyzer()
 
-    all_headlines = []
+    all_headlines = []  # List of (headline, source_url) tuples
 
     # Scrape each URL
     for url in urls:
         print(f"Scraping: {url}")
         headlines = scraper.scrape(url)
         print(f"  Found {len(headlines)} headlines.")
-        all_headlines.extend(headlines)
+        for h in headlines:
+            all_headlines.append((h, url))
 
-    # Save all scraped headlines
-    write_lines(prompt_file, all_headlines)
+    scraper.close()
 
     print("\nRunning Sentiment Analysis with Ollama...\n")
 
-    # Analyze sentiments for each headline
-    sentiments = [llm.analyze(h) for h in all_headlines]
+    # Analyze sentiments in parallel using ThreadPoolExecutor
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        sentiments = list(executor.map(llm.analyze, [h for h, _ in all_headlines]))
 
-    # Save sentiment results
-    write_lines(output_file, sentiments)
+    # Write paired results to CSV
+    timestamp = datetime.now().isoformat()
+    with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['headline', 'sentiment', 'source_url', 'timestamp'])
+        for (headline, source_url), sentiment in zip(all_headlines, sentiments):
+            writer.writerow([headline, sentiment, source_url, timestamp])
 
     print(f"\n Done. {len(all_headlines)} headlines analyzed.")
-    print(f"Prompts saved to: {prompt_file}")
-    print(f"Sentiments saved to: {output_file}")
+    print(f"Results saved to: {output_file}")
 
 # Run Main
 if __name__ == "__main__":

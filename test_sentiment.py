@@ -18,3 +18,21 @@ def test_sentiment_analyzer_classification(monkeypatch):
 
     assert isinstance(result, str)
     assert result == "positive"
+
+def test_sentiment_analyzer_error_handling(monkeypatch):
+    """
+    Test SentimentAnalyzer.analyze() returns an error string starting with
+    'error:' when ollama.generate raises an Exception.
+    """
+
+    def mock_generate_error(model, prompt):
+        raise Exception("Connection refused")
+
+    from project3 import ollama
+    monkeypatch.setattr(ollama, 'generate', mock_generate_error)
+
+    analyzer = SentimentAnalyzer(model='llama3.2')
+    result = analyzer.analyze("Test headline")
+
+    assert isinstance(result, str)
+    assert result.startswith("error:")
