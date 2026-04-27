@@ -1,45 +1,84 @@
-# Local Language Model Project with Ollama
+# News Sentiment Classifier
 
-This project demonstrates how to run two small-scale language models (Llama 3.2 and DeepSeek 1.5B) locally using Ollama. The program reads prompts from a text file, generates responses using the models, and displays the responses in the console.
+This project **scrapes financial news headlines** from major business websites and then uses a **local LLM** (via **Ollama**) to **classify each headline as Positive, Negative, or Neutral** based on its sentiment.
+
+It combines **Web Scraping**, **Local Language Models (LLMs)**, and **Object-Oriented Programming (OOP)** principles in Python.
+
+## Project Features
+
+- **Multi-source Scraping**: Automatically collects business headlines from multiple financial websites.
+- **Headless Scraping**: Uses both `requests` and `selenium` with random User-Agents to mimic real users.
+- **Headline Limiting**: Fetches a maximum of 5 headlines from each website.
+- **Local Sentiment Analysis**: Analyzes the sentiment of each headline using an LLM (`llama3.2`) through Ollama.
+- **Parallel Processing**: Uses `ThreadPoolExecutor` for concurrent sentiment analysis.
+- **Modular OOP Design**:
+  - Base classes (`BaseScraper`, `BaseLLM`)
+  - Child classes (`HeadlineScraper`, `SentimentAnalyzer`)
+- **Clean Input/Output**:
+  - `urls.txt` for input URLs
+  - `results.csv` for paired headlines, sentiments, source URLs, and timestamps.
 
 ## Prerequisites
 
-Before running the project, ensure you have the following installed:
+- Windows/macOS/Linux
+- Miniconda Installed
+- Ollama Installed and Running
+- Python 3.9 Installed
 
-1. Download Ollama
+## Setting Up the Environment
 
-2. Download Miniconda
+### 1. Create and Activate Conda Environment from environment.yaml
 
-3. Download VS Code
+```
+conda env create -f environment.yaml
+conda activate project3_env
+```
 
-## Setup
+## How to Use
 
-1. Clone the Repository
+### 1. Prepare `urls.txt`
 
-2. Create a Conda Environment using the requirements.yaml file.
-   conda env create -f requirements.yaml
+Create a text file called `urls.txt` in the project folder, containing the URLs of financial websites you want to scrape.
 
-3. Activate the Conda Environment using the command below.
-   conda activate llm_project1
+Example:
 
-4. Install Ollama Models by using the command below in ollama terminal.
-   ollama pull llama3.2
-   ollama pull deepseek-r1:1.5b
+```
+https://www.marketwatch.com/
+https://finance.yahoo.com/
+https://www.businessinsider.com/
+https://www.cnbc.com/business/
+```
 
-## Running the Project
+---
 
-1. Prepare the Prompts File
-   Create a file named `prompts.txt` in the project directory.
-   Add your prompts to the file, one per line. 
-   For example:
-     A shocking Chinese AI advancement called DeepSeek is sending US stocks plunging.
-     As sales slump, Kohl’s turns to a new CEO to bring back customers.
-     Expect record-high egg prices for most of the year.
+### 2. Run the Script
 
-2. Run the Script
-   Execute the Python script by using the command below.
-   python run_llm.py
+Make sure the Ollama service is running in the background!
 
-3. View the Output
-   The responses from both models will be printed to the console.
+Then, execute:
 
+python project3.py
+
+### 3. Output Files
+
+After successful execution:
+
+- **`results.csv`** — Contains all scraped headlines paired with their predicted sentiments, source URLs, and timestamps.
+
+Example:
+
+| headline | sentiment | source_url | timestamp |
+|---|---|---|---|
+| Today the market jumped 2000 points | positive | https://www.marketwatch.com/ | 2026-04-27T... |
+| Nvidia stocks are having a bullish run | positive | https://finance.yahoo.com/ | 2026-04-27T... |
+| Trader Joe is downsizing its business | negative | https://www.cnbc.com/business/ | 2026-04-27T... |
+
+
+
+## Technologies Used
+
+- **Python 3.9**
+- **Ollama** (Local LLM API)
+- **Selenium** + **Webdriver-Manager** (for dynamic web pages)
+- **Requests** + **BeautifulSoup** (for fast static scraping)
+- **Object-Oriented Programming** (Classes, Inheritance)
