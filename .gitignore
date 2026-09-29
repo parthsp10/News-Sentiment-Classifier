@@ -16,3 +16,4 @@ chromedriver/
 
 # Pytest
 .pytest_cache/
+output/
