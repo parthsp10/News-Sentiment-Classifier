@@ -1,4 +1,5 @@
 # Import Required Libraries
+import os
 import random
 import time
 import csv
@@ -40,9 +41,18 @@ class HeadlineScraper(BaseScraper):
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
         options.add_argument(f'user-agent={random.choice(self.USER_AGENTS)}')
-        self.driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=options
-        )
+        # Container support: use system Chromium/chromedriver when these env vars are set
+        chrome_bin = os.environ.get('CHROME_BIN')
+        chromedriver_path = os.environ.get('CHROMEDRIVER_PATH')
+        if chrome_bin:
+            options.binary_location = chrome_bin
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
+        if chromedriver_path:
+            service = Service(chromedriver_path)
+        else:
+            service = Service(ChromeDriverManager().install())
+        self.driver = webdriver.Chrome(service=service, options=options)
 
     def close(self):
         if hasattr(self, 'driver') and self.driver:
