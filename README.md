@@ -75,6 +75,52 @@ Example:
 
 
 
+## Run with Docker
+
+The container holds the app, Python dependencies, and Chromium (for the Selenium fallback). **Ollama is not in the container. It runs on your host machine, and the container connects to it over the network.**
+
+### Prerequisites
+
+- Docker Desktop (or Docker Engine with the Compose plugin)
+- Ollama installed and running on the host
+- The model pulled on the host:
+
+```
+ollama pull llama3.2
+```
+
+### Build
+
+```
+docker compose build
+```
+
+### Run
+
+```
+docker compose run --rm classifier
+```
+
+The container reads `urls.txt` from your project folder (mounted read-only) and writes `results.csv` to `./output/results.csv` on your machine. To point at a different Ollama server, set `OLLAMA_HOST` (default `http://host.docker.internal:11434`):
+
+```
+OLLAMA_HOST=http://192.168.1.50:11434 docker compose run --rm classifier
+```
+
+### Run the tests
+
+```
+docker compose --profile test run --rm test
+```
+
+### Troubleshooting
+
+- **`host.docker.internal` on Linux:** Docker Desktop provides it automatically. On Linux, `docker-compose.yml` maps it with `extra_hosts: host.docker.internal:host-gateway`, which needs Docker 20.10+. With plain `docker run`, add `--add-host=host.docker.internal:host-gateway`.
+- **Ollama only listens on 127.0.0.1:** if the results show `error: Failed to connect to Ollama`, the container may not be able to reach a host server bound to loopback only. Start Ollama with `OLLAMA_HOST=0.0.0.0` (on Windows, set it as an environment variable and restart Ollama), then retry. Be aware this exposes Ollama to your network.
+- **Chrome crashes or `/dev/shm` errors:** the app already passes `--disable-dev-shm-usage` in the container. If Chromium still runs out of shared memory, add `shm_size: "1gb"` to the service in `docker-compose.yml`.
+- **Permission denied writing `./output` (Linux):** the container runs as UID 1000. Make the folder writable for that user, for example `mkdir -p output && chmod 777 output`.
+- **`Found 0 headlines` for a site:** sites change their markup or block automated requests; this is scraping behaviour and is unrelated to Docker.
+
 ## Technologies Used
 
 - **Python 3.9**
