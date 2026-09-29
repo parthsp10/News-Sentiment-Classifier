@@ -121,6 +121,13 @@ docker compose --profile test run --rm test
 - **Permission denied writing `./output` (Linux):** the container runs as UID 1000. Make the folder writable for that user, for example `mkdir -p output && chmod 777 output`.
 - **`Found 0 headlines` for a site:** sites change their markup or block automated requests; this is scraping behaviour and is unrelated to Docker.
 
+## Limitations
+
+- **MarketWatch currently returns 0 headlines.** In a test run it answered plain `requests` calls with HTTP 401 and a DataDome bot-protection page, and headless Chromium received the same challenge page instead of the site. The CSS selector for MarketWatch is therefore untested against the live site, and the classifier does not try to bypass the protection. The other three sites returned 5 headlines each in that run.
+- **Selenium is only a fallback for failed HTTP requests.** It runs when `requests` raises an error or gets an error status. It is not tried when the request succeeds but the page has no matching headlines, and the console does not say when the fallback ran.
+- **Sentiment labels are not validated against human labels.** The model is asked for one word at temperature 0, and the reply is reduced to the first of `positive`, `negative` or `neutral` that appears as a whole word. Anything else becomes `unknown`, and Ollama failures are recorded as `error: ...`. No accuracy has been measured.
+- **Which 5 headlines you get can change between runs**, because duplicates are removed with a set before the first 5 are taken. Selectors for the other sites may also break when the sites change their markup.
+
 ## Technologies Used
 
 - **Python 3.9**
