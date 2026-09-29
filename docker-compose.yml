@@ -1,0 +1,20 @@
+services:
+  classifier:
+    build: .
+    image: news-sentiment-classifier
+    environment:
+      # Ollama runs on the host, not in a container
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+    # Makes host.docker.internal resolve on Linux too (Docker Desktop already provides it)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./urls.txt:/app/urls.txt:ro
+      - ./output:/app/output
+
+  test:
+    build: .
+    image: news-sentiment-classifier
+    profiles: ["test"]
+    entrypoint: ["python", "-m", "pytest"]
+    command: ["-v"]

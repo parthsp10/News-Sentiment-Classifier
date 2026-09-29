@@ -1,5 +1,7 @@
 # Import Required Libraries
+import os
 import random
+import re
 import time
 import csv
 import concurrent.futures
@@ -40,9 +42,18 @@ class HeadlineScraper(BaseScraper):
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
         options.add_argument(f'user-agent={random.choice(self.USER_AGENTS)}')
-        self.driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=options
-        )
+        # Container support: use system Chromium/chromedriver when these env vars are set
+        chrome_bin = os.environ.get('CHROME_BIN')
+        chromedriver_path = os.environ.get('CHROMEDRIVER_PATH')
+        if chrome_bin:
+            options.binary_location = chrome_bin
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
+        if chromedriver_path:
+            service = Service(chromedriver_path)
+        else:
+            service = Service(ChromeDriverManager().install())
+        self.driver = webdriver.Chrome(service=service, options=options)
 
     def close(self):
         if hasattr(self, 'driver') and self.driver:
@@ -112,12 +123,26 @@ class SentimentAnalyzer(BaseLLM):
 
     def analyze(self, prompt):
         
-        formatted_prompt = f"Classify the sentiment of this financial headline as positive, negative, or neutral:\n'{prompt}'"
+        formatted_prompt = (
+            "Classify the sentiment of this financial headline as positive, negative, or neutral.\n"
+            "Answer with exactly one word: positive, negative, or neutral. No explanation.\n"
+            f"Headline: '{prompt}'"
+        )
         try:
-            response = ollama.generate(model=self.model, prompt=formatted_prompt)
-            return response['response'].strip().lower()
+            response = ollama.generate(
+                model=self.model,
+                prompt=formatted_prompt,
+                options={"temperature": 0},
+            )
+            return self.parse_label(response['response'])
         except Exception as e:
             return f"error: {str(e)}"
+
+    @staticmethod
+    def parse_label(text):
+        # First label that appears as a whole word, else "unknown"
+        match = re.search(r"\b(positive|negative|neutral)\b", text.strip().lower())
+        return match.group(1) if match else "unknown"
 
 # Helper Functions
 def read_urls(path):
@@ -137,7 +162,7 @@ def read_urls(path):
 def main():
     
     url_file = "urls.txt"           # Input: List of financial news websites
-    output_file = "results.csv"     # Output: Paired headlines and sentiments
+    output_file = os.environ.get("OUTPUT_FILE", "results.csv")  # Output: Paired headlines and sentiments
 
     urls = read_urls(url_file)
     scraper = HeadlineScraper()
