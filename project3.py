@@ -147,7 +147,7 @@ def read_urls(path):
 def main():
     
     url_file = "urls.txt"           # Input: List of financial news websites
-    output_file = "results.csv"     # Output: Paired headlines and sentiments
+    output_file = os.environ.get("OUTPUT_FILE", "results.csv")  # Output: Paired headlines and sentiments
 
     urls = read_urls(url_file)
     scraper = HeadlineScraper()
